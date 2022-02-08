@@ -1,0 +1,3 @@
+[submodule "hfsutils/hfsutils-master"]
+	path = hfsutils/hfsutils-master
+	url = https://iomac@github.com/iomac/hfsutils.git
