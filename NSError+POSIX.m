@@ -23,9 +23,11 @@
 #import "NSError+POSIX.h"
 
 @implementation NSError (POSIX)
-+ (NSError *)errorWithHFSError:(const char*)pMessage code:(int) code {
++ (NSError *)hfsErrorWithMessage:(const char*)pMessage code:(int) code {
   
   NSString* message = [NSString stringWithCString:pMessage encoding:NSASCIIStringEncoding];
+
+  NSLog(@"NSError: %@ (%d) -- %@", NSPOSIXErrorDomain, code, message);
   
   return [NSError errorWithDomain:NSPOSIXErrorDomain
                              code:code

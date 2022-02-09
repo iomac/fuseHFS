@@ -220,6 +220,44 @@ NS_ASSUME_NONNULL_BEGIN
     [self.volume unmount];
 }
 
+#pragma mark Extended Attributes
+
+- (NSArray *)extendedAttributesOfItemAtPath:(NSString *)path error:(NSError **)error
+{
+    NSLog(@"extendedAttributesOfItemAtPath: %@", path);
+
+    return [self.volume extendedAttributesOfItemAtPath:path error:error];
+}
+
+- (NSData *)valueOfExtendedAttribute:(NSString *)name
+                        ofItemAtPath:(NSString *)path
+                            position:(off_t)position
+                               error:(NSError **)error
+{
+    NSLog(@"valueOfExtendedAttribute: %@ ofItemAtPath: %@", name, path);
+    return [self.volume valueOfExtendedAttribute:name ofItemAtPath:path position:position error:error];
+}
+
+- (BOOL)setExtendedAttribute:(NSString *)name
+                ofItemAtPath:(NSString *)path
+                       value:(NSData *)value
+                    position:(off_t)position
+                     options:(int)options
+                       error:(NSError **)error
+{
+    NSLog(@"setExtendedAttribute: %@ ofItemAtPath: %@", name, path);
+    
+    return [self.volume setExtendedAttribute:name ofItemAtPath:path value:value position:position options:options error:error];
+}
+
+- (BOOL)removeExtendedAttribute:(NSString *)name
+                   ofItemAtPath:(NSString *)path
+                          error:(NSError **)error
+{
+    NSLog(@"removeExtendedAttribute: %@", path);
+    return [self.volume removeExtendedAttribute:name ofItemAtPath:path error:error];
+}
+
 @end
 
 NS_ASSUME_NONNULL_END

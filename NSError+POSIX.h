@@ -23,5 +23,5 @@
 // Category on NSError to  simplify creating an NSError based on posix errno.
 @interface NSError (POSIX)
 + (NSError *)errorWithPOSIXCode:(int)code;
-+ (NSError *)errorWithHFSError:(const char*)message code:(int)code;
++ (NSError *)hfsErrorWithMessage:(const char*)message code:(int)code;
 @end

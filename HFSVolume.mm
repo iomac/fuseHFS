@@ -9,13 +9,33 @@
 #import <macFUSE/macFUSE.h>
 #import "NSException+Helpers.h"
 #import "NSError+POSIX.h"
-
 extern "C"
 {
     #include "libhfs.h"
 }
 
+#define CONVERT_TO_HFS_PATH(__path__) do { __path__ = [__path__ stringByReplacingOccurrencesOfString:@"/" withString:@":"]; } while(0);
+#define TO_MACOS_ROMAN_STRING(__str__) [__str__ cStringUsingEncoding:NSMacOSRomanStringEncoding]
+#define HFS_ERROR [NSError hfsErrorWithMessage:hfs_error code:errno]
 
+const unsigned short kDataFork = 0x00;
+const unsigned short kResourceFork = 0xff;
+
+const NSString* kExtendedAttributeFinderInfo = @"com.apple.FinderInfo";
+const NSString* kExtendedAttributeResourceFork = @"com.apple.ResourceFork";
+
+typedef struct {
+    union {
+        struct {
+            FileInfo info;
+            ExtendedFileInfo extendedInfo;
+        } file;
+        struct {
+            FolderInfo info;
+            ExtendedFolderInfo extendedInfo;
+        } folder;
+    } u;
+} FinderInfo;
 
 @interface HFSFile : NSObject
 
@@ -108,12 +128,22 @@ extern "C"
 
 - (NSDictionary*)attributesOfItemAtPath:(NSString *)path userData:(id)userData error:(NSError **)error
 {
-    path = [path stringByReplacingOccurrencesOfString:@"/" withString:@":"];
     hfsdirent entry;
 
-    if (hfs_stat(self.hfsVolume, path.UTF8String, &entry) == -1) {
-        *error = [NSError errorWithPOSIXCode:ENOENT];
-        return nil;
+    if (userData) {
+        HFSFile* file = userData;
+
+        if (hfs_fstat(file.file, &entry) == -1) {
+            *error = [NSError errorWithPOSIXCode:ENOENT];
+            return nil;
+        }
+    } else {
+        CONVERT_TO_HFS_PATH(path);
+
+        if (hfs_stat(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &entry) == -1) {
+            *error = [NSError errorWithPOSIXCode:ENOENT];
+            return nil;
+        }
     }
     
     NSMutableDictionary* attributes = [[NSMutableDictionary alloc] initWithDictionary:@{
@@ -193,7 +223,7 @@ extern "C"
     path = [self.volumeName stringByAppendingString:path];
     
     if(hfs_mkdir(self.hfsVolume, [path cStringUsingEncoding:NSMacOSRomanStringEncoding]) == -1) {
-        *error = [NSError errorWithHFSError:hfs_error code:errno];
+        *error = HFS_ERROR;
         return NO;
     }
     
@@ -210,7 +240,7 @@ extern "C"
     destination = [destination stringByReplacingOccurrencesOfString:@"/" withString:@":"];
 
     if( hfs_rename(self.hfsVolume, [source cStringUsingEncoding:NSMacOSRomanStringEncoding], [destination cStringUsingEncoding:NSMacOSRomanStringEncoding]) != 0 ) {
-        *error = [NSError errorWithPOSIXCode:ENOENT];
+        *error = HFS_ERROR;
         return NO;
     }
     
@@ -316,6 +346,8 @@ extern "C"
                 offset:(off_t)offset
                  error:(NSError **)error
 {
+    NSAssert(userData, @"Expected user data");
+
     HFSFile* file = userData;
 
     if (hfs_seek(file.file, offset, HFS_SEEK_SET) == -1) {
@@ -325,6 +357,8 @@ extern "C"
     
     size_t bytesWritten = hfs_write(file.file, buffer, size);
     
+    _writeCountSinceLastFlush++;
+
     return (int)bytesWritten;
 }
 
@@ -335,6 +369,8 @@ extern "C"
                offset:(off_t)offset
                 error:(NSError **)error
 {
+    NSAssert(userData, @"Expected user data");
+    
     HFSFile* file = userData;
 
     if (hfs_seek(file.file, offset, HFS_SEEK_SET) == -1) {
@@ -352,6 +388,8 @@ extern "C"
              userData:(id)userData
                 error:(NSError **)error
 {
+    NSAssert(userData, @"Expected user data");
+
     NSLog(@"%@", attributes);
 
     path = [path stringByReplacingOccurrencesOfString:@"/" withString:@":"];
@@ -383,6 +421,8 @@ extern "C"
     
     // TODO: other flags?
     
+    _writeCountSinceLastFlush++;
+
     return YES;
 }
 
@@ -397,7 +437,16 @@ extern "C"
         return NO;
     }
     
+    _writeCountSinceLastFlush++;
+
     return YES;
+}
+
+- (void)flush
+{
+    hfs_flush(self.hfsVolume);
+    
+    _writeCountSinceLastFlush = 0;
 }
 
 - (void)unmount
@@ -410,5 +459,213 @@ extern "C"
         self.hfsVolume = NULL;
     }
 }
+
+#pragma mark Extended Attributes
+
+- (NSArray *)extendedAttributesOfItemAtPath:(NSString *)path error:(NSError **)error {
+    CONVERT_TO_HFS_PATH(path);
+
+    hfsdirent ent;
+
+    if (hfs_stat(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &ent) == -1) {
+        *error = HFS_ERROR;
+        return nil;
+    }
+
+    NSArray* attributes = @[kExtendedAttributeFinderInfo];
+    
+    if (!(ent.flags & HFS_ISDIR)) {
+        if (ent.u.file.rsize > 0) {
+            attributes = @[kExtendedAttributeFinderInfo, kExtendedAttributeResourceFork];
+        }
+    }
+    return attributes;
+}
+
+- (NSData *)valueOfExtendedAttribute:(NSString *)name
+                        ofItemAtPath:(NSString *)path
+                            position:(off_t)position
+                               error:(NSError **)error {
+    CONVERT_TO_HFS_PATH(path);
+    
+    if ([kExtendedAttributeFinderInfo isEqualToString:name]) {
+        // Need to populate the classic finder info data set
+        hfsdirent ent;
+
+        if (hfs_stat(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &ent) == -1) {
+            *error = HFS_ERROR;
+            return nil;
+        }
+
+        FinderInfo finderInfo = {0};
+
+        if (ent.flags & HFS_ISDIR) {
+            finderInfo.u.folder.info.windowBounds.left = ent.u.dir.rect.left;
+            finderInfo.u.folder.info.windowBounds.right = ent.u.dir.rect.right;
+            finderInfo.u.folder.info.windowBounds.top = ent.u.dir.rect.top;
+            finderInfo.u.folder.info.windowBounds.bottom = ent.u.dir.rect.bottom;
+            finderInfo.u.folder.info.finderFlags = ent.fdflags;
+            finderInfo.u.folder.info.location.h = ent.fdlocation.h;
+            finderInfo.u.folder.info.location.v = ent.fdlocation.v;
+//            finderInfo.u.folder.extendedInfo.scrollPosition;
+//            finderInfo.u.folder.extendedInfo.extendedFinderFlags;
+//            finderInfo.u.folder.extendedInfo.putAwayFolderID;
+        } else {
+            finderInfo.u.file.info.fileType = *((OSType*)&ent.u.file.type);
+            finderInfo.u.file.info.fileCreator = *((OSType*)&ent.u.file.creator);
+            finderInfo.u.file.info.finderFlags = ent.fdflags;
+            finderInfo.u.file.info.location.h = ent.fdlocation.h;
+            finderInfo.u.file.info.location.v = ent.fdlocation.v;
+//            finderInfo.u.file.extendedInfo.extendedFinderFlags;
+//            finderInfo.u.file.extendedInfo.putAwayFolderID;
+        }
+        
+        _writeCountSinceLastFlush++;
+
+        return [NSData dataWithBytes:&finderInfo length:32];
+    } else if ([kExtendedAttributeResourceFork isEqualToString:name]) {
+        hfsdirent ent;
+
+        if (hfs_stat(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &ent) == -1) {
+            *error = HFS_ERROR;
+            return nil;
+        }
+        
+        if (ent.flags & HFS_ISDIR) {
+            *error = [NSError errorWithPOSIXCode:EPERM];
+            return nil;
+        }
+        
+        size_t byteCount = ent.u.file.rsize;
+        hfsfile* file = hfs_open(self.hfsVolume, TO_MACOS_ROMAN_STRING(path));
+        
+        if (hfs_setfork(file, kResourceFork) == -1) {
+            hfs_close(file);
+            
+            *error = HFS_ERROR;
+            return nil;
+        }
+        
+        NSMutableData* data = [NSMutableData data];
+        
+        size_t bytesRead = 0;
+        const int kBufferSize = 512;
+        byte buffer[kBufferSize];
+
+        while( (bytesRead = hfs_read(file, buffer, kBufferSize)) > 0 ) {
+            [data appendBytes:buffer length:bytesRead];
+        }
+        
+        if (bytesRead == -1) {
+            *error = HFS_ERROR;
+            data = nil;
+        }
+
+        hfs_close(file);
+
+        _writeCountSinceLastFlush++;
+
+        return data;
+    }
+    
+    return nil;
+}
+
+- (BOOL)setExtendedAttribute:(NSString *)name
+                ofItemAtPath:(NSString *)path
+                       value:(NSData *)value
+                    position:(off_t)position
+                       options:(int)options
+                       error:(NSError **)error {
+    CONVERT_TO_HFS_PATH(path);
+
+    if ([kExtendedAttributeFinderInfo isEqualToString:name]) {
+        hfsdirent ent;
+
+        if (hfs_stat(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &ent) == -1) {
+            *error = HFS_ERROR;
+            return nil;
+        }
+        
+        FinderInfo finderInfo = {0};
+        
+        memcpy(&finderInfo, [value bytes], sizeof(finderInfo));
+        
+        if (ent.flags & HFS_ISDIR) {
+            ent.u.dir.rect.left = finderInfo.u.folder.info.windowBounds.left;
+            ent.u.dir.rect.right = finderInfo.u.folder.info.windowBounds.right;
+            ent.u.dir.rect.top = finderInfo.u.folder.info.windowBounds.top;
+            ent.u.dir.rect.bottom = finderInfo.u.folder.info.windowBounds.bottom;
+            ent.fdflags = finderInfo.u.folder.info.finderFlags;
+            ent.fdlocation.h = finderInfo.u.folder.info.location.h;
+            ent.fdlocation.v = finderInfo.u.folder.info.location.v;
+//            finderInfo.u.folder.extendedInfo.scrollPosition;
+//            finderInfo.u.folder.extendedInfo.extendedFinderFlags;
+//            finderInfo.u.folder.extendedInfo.putAwayFolderID;
+        } else {
+            memcpy(&ent.u.file.type, &finderInfo.u.file.info.fileType, 4);
+            memcpy(&ent.u.file.creator, &finderInfo.u.file.info.fileCreator, 4);
+            ent.fdflags = finderInfo.u.file.info.finderFlags;
+            ent.fdlocation.h = finderInfo.u.file.info.location.h;
+            ent.fdlocation.v = finderInfo.u.file.info.location.v;
+//            finderInfo.u.file.extendedInfo.extendedFinderFlags;
+//            finderInfo.u.file.extendedInfo.putAwayFolderID;
+        }
+
+        if (hfs_setattr(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &ent) == -1) {
+            *error = HFS_ERROR;
+            return nil;
+        }
+        
+        _writeCountSinceLastFlush++;
+        
+        return YES;
+    } else if ([kExtendedAttributeResourceFork isEqualToString:name]) {
+        hfsfile* file = hfs_open(self.hfsVolume, TO_MACOS_ROMAN_STRING(path));
+
+        if (hfs_setfork(file, kResourceFork) == -1) {
+            hfs_close(file);
+            
+            *error = HFS_ERROR;
+            return NO;
+        }
+        
+        if (hfs_seek(file, 0, HFS_SEEK_SET) == -1) {
+            hfs_close(file);
+
+            *error = HFS_ERROR;
+            return NO;
+        }
+        
+        if( hfs_write(file, [value bytes], value.length) == -1 ) {
+            hfs_close(file);
+
+            *error = HFS_ERROR;
+            return NO;
+        }
+
+        hfs_close(file);
+
+        _writeCountSinceLastFlush++;
+
+        hfsdirent ent;
+
+        if (hfs_stat(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &ent) == -1) {
+            *error = HFS_ERROR;
+            return nil;
+        }
+
+        return YES;
+    }
+    
+    return NO;
+}
+
+- (BOOL)removeExtendedAttribute:(NSString *)name
+                   ofItemAtPath:(NSString *)path
+                          error:(NSError **)error {
+    @throw [NSException notImplementedException];
+}
+
 
 @end
