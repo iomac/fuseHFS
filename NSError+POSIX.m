@@ -24,14 +24,21 @@
 
 @implementation NSError (POSIX)
 + (NSError *)hfsErrorWithMessage:(const char*)pMessage code:(int) code {
+  NSDictionary* userInfo = nil;
   
-  NSString* message = [NSString stringWithCString:pMessage encoding:NSASCIIStringEncoding];
+  if (pMessage) {
+    NSString* message = [NSString stringWithCString:pMessage encoding:NSASCIIStringEncoding];
+    
+    userInfo = @{@"message": message};
 
-  NSLog(@"NSError: %@ (%d) -- %@", NSPOSIXErrorDomain, code, message);
+    NSLog(@"NSError: %@ (%d) -- %@", NSPOSIXErrorDomain, code, message);
+  } else {
+    NSLog(@"NSError: %@ (%d)", NSPOSIXErrorDomain, code);
+  }
   
   return [NSError errorWithDomain:NSPOSIXErrorDomain
                              code:code
-                         userInfo:@{@"message": message}];
+                         userInfo:userInfo];
 }
 
 + (NSError *)errorWithPOSIXCode:(int)code {

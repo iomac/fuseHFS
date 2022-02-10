@@ -66,6 +66,8 @@ typedef struct {
 - (instancetype)initWithVolume:(hfsvol*)vol {
     if (self = [super init]) {
         self.hfsVolume = vol;
+        _writeCountSinceLastFlush = 0;
+        self.dirtyTimeStamp = [NSDate now];
     }
     
     return self;
@@ -83,6 +85,14 @@ typedef struct {
     }
     
     return [[HFSVolume alloc] initWithVolume:volume];
+}
+
+- (void)incrementWriteCount {
+    if (_writeCountSinceLastFlush == 0) {
+        self.dirtyTimeStamp = [NSDate now];
+    }
+    
+    _writeCountSinceLastFlush++;
 }
 
 - (NSString*)volumeName {
@@ -104,10 +114,9 @@ typedef struct {
     hfsvolent entry;
 
     if (hfs_vstat(self.hfsVolume, &entry) == -1) {
-        *error = [NSError errorWithPOSIXCode:ENOENT];
+        *error = HFS_ERROR;
         return nil;
     }
-    
     
     NSMutableDictionary* attributes = [[NSMutableDictionary alloc] initWithDictionary:@{
         NSFileSystemFreeSize: @(entry.freebytes),
@@ -116,10 +125,12 @@ typedef struct {
     }];
     
     // FUSE Flags
+    attributes[kGMUserFileSystemVolumeNameKey] = [NSString stringWithCString:entry.name encoding:NSMacOSRomanStringEncoding];
     attributes[kGMUserFileSystemVolumeSupportsExtendedDatesKey] = @NO;
     attributes[kGMUserFileSystemVolumeSupportsCaseSensitiveNamesKey] = @YES;
     attributes[kGMUserFileSystemVolumeMaxFilenameLengthKey] = @(27);
     attributes[kGMUserFileSystemVolumeFileSystemBlockSizeKey] = @(entry.alblocksz);
+    attributes[kGMUserFileSystemVolumeSupportsAllocateKey] = @NO;
     
     //NSLog(@"%@", attributes);
     
@@ -134,7 +145,7 @@ typedef struct {
         HFSFile* file = userData;
 
         if (hfs_fstat(file.file, &entry) == -1) {
-            *error = [NSError errorWithPOSIXCode:ENOENT];
+            *error = HFS_ERROR;
             return nil;
         }
     } else {
@@ -165,15 +176,6 @@ typedef struct {
         attributes[NSFileHFSTypeCode] = @(*(unsigned int*)entry.u.file.type);
     }
     
-    // TODO: fix
-    if (entry.flags & HFS_ISLOCKED) attributes[NSFilePosixPermissions] = @(777);
-
-    // TODO: verify
-    attributes[NSFileImmutable] = (entry.flags & HFS_ISLOCKED) ? @YES : @NO;
-    
-    // Finder flags
-    if (entry.fdflags & HFS_FNDR_ISALIAS) attributes[NSFileTypeSymbolicLink] = @YES;
-    
     // FUSE Flags
     attributes[kGMUserFileSystemVolumeSupportsExtendedDatesKey] = @NO;
     attributes[kGMUserFileSystemVolumeSupportsCaseSensitiveNamesKey] = @YES;
@@ -192,12 +194,12 @@ typedef struct {
 - (NSArray *)contentsOfDirectoryAtPath:(NSString *)path
                                  error:(NSError **)error
 {
-    path = [path stringByReplacingOccurrencesOfString:@"/" withString:@":"];
+    CONVERT_TO_HFS_PATH(path);
 
     hfsdir * dir = hfs_opendir(self.hfsVolume, [path cStringUsingEncoding:NSMacOSRomanStringEncoding]);
     
     if (!dir) {
-        *error = [NSError errorWithPOSIXCode:ENOENT];
+        *error = HFS_ERROR;
         return nil;
     }
     
@@ -219,7 +221,7 @@ typedef struct {
                    attributes:(NSDictionary *)attributes
                         error:(NSError **)error
 {
-    path = [path stringByReplacingOccurrencesOfString:@"/" withString:@":"];
+    CONVERT_TO_HFS_PATH(path);
     path = [self.volumeName stringByAppendingString:path];
     
     if(hfs_mkdir(self.hfsVolume, [path cStringUsingEncoding:NSMacOSRomanStringEncoding]) == -1) {
@@ -236,8 +238,8 @@ typedef struct {
                options:(GMUserFileSystemMoveOption)options
                  error:(NSError **)error
 {
-    source = [source stringByReplacingOccurrencesOfString:@"/" withString:@":"];
-    destination = [destination stringByReplacingOccurrencesOfString:@"/" withString:@":"];
+    CONVERT_TO_HFS_PATH(source);
+    CONVERT_TO_HFS_PATH(destination);
 
     if( hfs_rename(self.hfsVolume, [source cStringUsingEncoding:NSMacOSRomanStringEncoding], [destination cStringUsingEncoding:NSMacOSRomanStringEncoding]) != 0 ) {
         *error = HFS_ERROR;
@@ -254,7 +256,7 @@ typedef struct {
                 userData:(id *)userData
                    error:(NSError **)error
 {
-    path = [path stringByReplacingOccurrencesOfString:@"/" withString:@":"];
+    CONVERT_TO_HFS_PATH(path);
 
     int creatorCode = 'APPL';
     int typeCode = 'TEXT';
@@ -266,7 +268,7 @@ typedef struct {
     
     if( !file )
     {
-        *error = [NSError errorWithPOSIXCode:ENOENT];
+        *error = HFS_ERROR;
         return NO;
     }
     
@@ -301,10 +303,10 @@ typedef struct {
 
 - (BOOL)removeItemAtPath:(NSString *)path error:(NSError **)error
 {
-    path = [path stringByReplacingOccurrencesOfString:@"/" withString:@":"];
-    
-    if( hfs_delete(self.hfsVolume, [path cStringUsingEncoding:NSMacOSRomanStringEncoding]) == -1) {
-        *error = [NSError errorWithPOSIXCode:ENOENT];
+    CONVERT_TO_HFS_PATH(path);
+
+    if( hfs_delete(self.hfsVolume, TO_MACOS_ROMAN_STRING(path)) == -1) {
+        *error = HFS_ERROR;
         return NO;
     }
 
@@ -316,13 +318,13 @@ typedef struct {
                   mode:(int)mode
               userData:(id *)userData
                  error:(NSError **)error {
-    path = [path stringByReplacingOccurrencesOfString:@"/" withString:@":"];
+    CONVERT_TO_HFS_PATH(path);
 
-    hfsfile* file = hfs_open(self.hfsVolume, [path cStringUsingEncoding:NSMacOSRomanStringEncoding]);
+    hfsfile* file = hfs_open(self.hfsVolume, TO_MACOS_ROMAN_STRING(path));
 
     if( !file )
     {
-        *error = [NSError errorWithPOSIXCode:ENOENT];
+        *error = HFS_ERROR;
         return NO;
     }
     
@@ -351,13 +353,13 @@ typedef struct {
     HFSFile* file = userData;
 
     if (hfs_seek(file.file, offset, HFS_SEEK_SET) == -1) {
-        *error = [NSError errorWithPOSIXCode:ENOENT];
+        *error = HFS_ERROR;
         return -1;
     }
     
     size_t bytesWritten = hfs_write(file.file, buffer, size);
-    
-    _writeCountSinceLastFlush++;
+
+    [self incrementWriteCount];
 
     return (int)bytesWritten;
 }
@@ -374,7 +376,7 @@ typedef struct {
     HFSFile* file = userData;
 
     if (hfs_seek(file.file, offset, HFS_SEEK_SET) == -1) {
-        *error = [NSError errorWithPOSIXCode:ENOENT];
+        *error = HFS_ERROR;
         return -1;
     }
     
@@ -388,28 +390,73 @@ typedef struct {
              userData:(id)userData
                 error:(NSError **)error
 {
-    NSAssert(userData, @"Expected user data");
-
     NSLog(@"%@", attributes);
 
-    path = [path stringByReplacingOccurrencesOfString:@"/" withString:@":"];
+    CONVERT_TO_HFS_PATH(path);
 
-    NSNumber* offset = attributes[NSFileSize];
-    
-    if (offset) {
-        hfsfile* pFile = hfs_open(self.hfsVolume, [path cStringUsingEncoding:NSMacOSRomanStringEncoding]);
+    if (attributes[NSFileSize]) {
+        NSNumber* offset = attributes[NSFileSize];
+        hfsfile* pFile;
         
-        if (!pFile) {
-            *error = [NSError errorWithPOSIXCode:ENOENT];
-            return NO;
+        if (userData) {
+            pFile = ((HFSFile*)userData).file;
+        } else {
+            pFile = hfs_open(self.hfsVolume, TO_MACOS_ROMAN_STRING(path));
+
+            if (!pFile) {
+                *error = HFS_ERROR;
+                return NO;
+            }
         }
         
-        int result = hfs_truncate(pFile, offset.intValue);
+        if (hfs_truncate(pFile, offset.intValue) == -1) {
+            if (!userData)
+                hfs_close(pFile);
 
-        hfs_close(pFile);
+            *error = HFS_ERROR;
+            return NO;
+        }
 
-        if ( result == -1) {
-            *error = [NSError errorWithPOSIXCode:ENOENT];
+        [self incrementWriteCount];
+
+        if (!userData)
+            hfs_close(pFile);
+    }
+    
+    if (attributes[NSFileModificationDate] || attributes[NSFileCreationDate]) {
+        NSDate* creDate = attributes[NSFileCreationDate];
+        NSDate* modDate = attributes[NSFileModificationDate];
+
+        hfsdirent ent;
+        int result;
+
+        if (userData) {
+            result = hfs_fstat(((HFSFile*)userData).file, &ent);
+        } else {
+            result = hfs_stat(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &ent);
+        }
+        
+        if (result == -1) {
+            *error = HFS_ERROR;
+            return NO;
+        }
+
+        if (modDate) {
+            ent.mddate = [modDate timeIntervalSince1970];
+        }
+        
+        if (creDate) {
+            ent.crdate = [creDate timeIntervalSince1970];
+        }
+        
+        if (userData) {
+            result = hfs_fsetattr(((HFSFile*)userData).file, &ent);
+        } else {
+            result = hfs_setattr(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &ent);
+        }
+
+        if (result == -1) {
+            *error = HFS_ERROR;
             return NO;
         }
     }
@@ -420,44 +467,58 @@ typedef struct {
     }
     
     // TODO: other flags?
-    
-    _writeCountSinceLastFlush++;
 
     return YES;
 }
 
 - (BOOL)removeDirectoryAtPath:(NSString *)path error:(NSError **)error
 {
-    path = [path stringByReplacingOccurrencesOfString:@"/" withString:@":"];
+    CONVERT_TO_HFS_PATH(path);
 
     int result = hfs_rmdir(self.hfsVolume, [path cStringUsingEncoding:NSMacOSRomanStringEncoding]);
     
     if (result == -1) {
-        *error = [NSError errorWithPOSIXCode:ENOENT];
+        *error = HFS_ERROR;
         return NO;
     }
     
-    _writeCountSinceLastFlush++;
+    [self incrementWriteCount];
 
     return YES;
 }
 
-- (void)flush
+- (BOOL)flush:(NSError **)error
 {
-    hfs_flush(self.hfsVolume);
+    BOOL success = YES;
     
-    _writeCountSinceLastFlush = 0;
+    if (self.hfsVolume) {
+//        if (hfs_flush(self.hfsVolume) == -1) {
+//            *error = HFS_ERROR;
+//            success = NO;
+//        } else {
+            _writeCountSinceLastFlush = 0;
+            _dirtyTimeStamp = [NSDate now];
+//        }
+    }
+    
+    return success;
 }
 
-- (void)unmount
+- (BOOL)unmount:(NSError **)error
 {
+    BOOL success = YES;
     NSLog(@"HFSUtils unmount");
     
     if (self.hfsVolume) {
-        hfs_umount(self.hfsVolume);
+        if (hfs_umount(self.hfsVolume) == -1) {
+            *error = HFS_ERROR;
+            success = NO;
+        }
         
         self.hfsVolume = NULL;
     }
+    
+    return success;
 }
 
 #pragma mark Extended Attributes
@@ -520,8 +581,6 @@ typedef struct {
 //            finderInfo.u.file.extendedInfo.putAwayFolderID;
         }
         
-        _writeCountSinceLastFlush++;
-
         return [NSData dataWithBytes:&finderInfo length:32];
     } else if ([kExtendedAttributeResourceFork isEqualToString:name]) {
         hfsdirent ent;
@@ -562,8 +621,6 @@ typedef struct {
         }
 
         hfs_close(file);
-
-        _writeCountSinceLastFlush++;
 
         return data;
     }
@@ -617,8 +674,8 @@ typedef struct {
             return nil;
         }
         
-        _writeCountSinceLastFlush++;
-        
+        [self incrementWriteCount];
+
         return YES;
     } else if ([kExtendedAttributeResourceFork isEqualToString:name]) {
         hfsfile* file = hfs_open(self.hfsVolume, TO_MACOS_ROMAN_STRING(path));
@@ -646,7 +703,7 @@ typedef struct {
 
         hfs_close(file);
 
-        _writeCountSinceLastFlush++;
+        [self incrementWriteCount];
 
         hfsdirent ent;
 
@@ -663,7 +720,12 @@ typedef struct {
 
 - (BOOL)removeExtendedAttribute:(NSString *)name
                    ofItemAtPath:(NSString *)path
-                          error:(NSError **)error {
+                          error:(NSError **)error
+{
+    if ([kExtendedAttributeFinderInfo isEqualToString:name]) {
+        return NO;
+    }
+    
     @throw [NSException notImplementedException];
 }
 

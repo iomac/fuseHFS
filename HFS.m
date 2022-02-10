@@ -45,24 +45,55 @@ NS_ASSUME_NONNULL_BEGIN
     return self.volume.volumeName;
 }
 
+- (NSTimeInterval)timeSinceDirty {
+    return [self.volume.dirtyTimeStamp timeIntervalSinceNow];
+}
+
+- (BOOL)checkFlush:(NSError **)error {
+    BOOL success = YES;
+
+    NSUInteger writeCount = self.volume.writeCountSinceLastFlush;
+
+    BOOL needFlush = (writeCount > 30 && self.timeSinceDirty > 5) || (writeCount > 0 && self.timeSinceDirty > 30);
+    
+    if (needFlush) {
+        success = [self.volume flush:error];
+    }
+    
+    return success;
+}
+
 #pragma mark Moving an Item
 
 - (BOOL)moveItemAtPath:(NSString *)source
                 toPath:(NSString *)destination
                options:(GMUserFileSystemMoveOption)options
                  error:(NSError **)error {
+
+    if (![self checkFlush:error]) {
+        return NO;
+    }
+
     NSLog(@"moveItemAtPath: %@", source);
+
     return [self.volume moveItemAtPath:source toPath:destination options:options error:error];
 }
 
 #pragma mark Removing an Item
 
 - (BOOL)removeDirectoryAtPath:(NSString *)path error:(NSError **)error {
+    if (![self checkFlush:error]) {
+        return NO;
+    }
     NSLog(@"removeDirectoryAtPath: %@", path);
     return [self.volume removeDirectoryAtPath:path error:error];
 }
 
 - (BOOL)removeItemAtPath:(NSString *)path error:(NSError **)error {
+    if (![self checkFlush:error]) {
+        return NO;
+    }
+
     NSLog(@"removeItemAtPath: %@", path);
     return [self.volume removeItemAtPath:path error:error];
 }
@@ -72,6 +103,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)createDirectoryAtPath:(NSString *)path
                    attributes:(NSDictionary *)attributes
                         error:(NSError **)error {
+    if (![self checkFlush:error]) {
+        return NO;
+    }
+
     NSLog(@"createDirectoryAtPath: %@", path);
     return [self.volume createDirectoryAtPath:path attributes:attributes error:error];
 }
@@ -83,6 +118,11 @@ NS_ASSUME_NONNULL_BEGIN
                    error:(NSError **)error
 {
     NSLog(@"createFileAtPath: %@", path);
+
+    if (![self checkFlush:error]) {
+        return NO;
+    }
+
     return [self.volume createFileAtPath:path
                               attributes:attributes
                                    flags:flags
@@ -102,31 +142,6 @@ NS_ASSUME_NONNULL_BEGIN
                             error:error];
 }
 
-#pragma mark Linking an Item
-
-- (BOOL)linkItemAtPath:(NSString *)path
-                toPath:(NSString *)otherPath
-                 error:(NSError **)error {
-
-    NSLog(@"linkItemAtPath: %@", path);
-    @throw [NSException exceptionWithName:@"NotImplemented" reason:@"Lazy developer" userInfo:nil];
-}
-
-#pragma mark Symbolic Links
-
-- (BOOL)createSymbolicLinkAtPath:(NSString *)path
-             withDestinationPath:(NSString *)otherPath
-                           error:(NSError **)error {
-    NSLog(@"createSymbolicLinkAtPath: %@", path);
-    @throw [NSException exceptionWithName:@"NotImplemented" reason:@"Lazy developer" userInfo:nil];
-}
-
-- (NSString *)destinationOfSymbolicLinkAtPath:(NSString *)path
-                                        error:(NSError **)error {
-    NSLog(@"destinationOfSymbolicLinkAtPath: %@", path);
-    @throw [NSException exceptionWithName:@"NotImplemented" reason:@"Lazy developer" userInfo:nil];
-}
-
 #pragma mark File Contents
 
 - (BOOL)openFileAtPath:(NSString *)path
@@ -134,11 +149,17 @@ NS_ASSUME_NONNULL_BEGIN
               userData:(id *)userData
                  error:(NSError **)error {
     NSLog(@"openFileAtPath: %@", path);
+
+    if (![self checkFlush:error]) {
+        return NO;
+    }
+
     return [self.volume openFileAtPath:path mode:mode userData:userData error:error];
 }
 
 - (void)releaseFileAtPath:(NSString *)path userData:(id)userData {
     NSLog(@"releaseFileAtPath: %@", path);
+
     [self.volume releaseFileAtPath:path userData:userData];
 }
 
@@ -149,6 +170,7 @@ NS_ASSUME_NONNULL_BEGIN
                offset:(off_t)offset
                 error:(NSError **)error {
     NSLog(@"readFileAtPath: %@", path);
+
     return [self.volume readFileAtPath:path userData:userData buffer:buffer size:size offset:offset error:error];
 }
 
@@ -159,17 +181,8 @@ NS_ASSUME_NONNULL_BEGIN
                 offset:(off_t)offset
                  error:(NSError **)error {
     NSLog(@"writeFileAtPath: %@", path);
-    return [self.volume writeFileAtPath:path userData:userData buffer:buffer size:size offset:offset error:error];
-}
 
-- (BOOL)preallocateFileAtPath:(NSString *)path
-                     userData:(id)userData
-                      options:(int)options
-                       offset:(off_t)offset
-                       length:(off_t)length
-                        error:(NSError **)error {
-    NSLog(@"preallocateFileAtPath: %@", path);
-    return [self.volume preallocateFileAtPath:path userData:userData options:options offset:offset length:length error:error];
+    return [self.volume writeFileAtPath:path userData:userData buffer:buffer size:size offset:offset error:error];
 }
 
 - (BOOL)exchangeDataOfItemAtPath:(NSString *)path1
@@ -184,6 +197,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray *)contentsOfDirectoryAtPath:(NSString *)path error:(NSError **)error {
     NSLog(@"contentsOfDirectoryAtPath:%@", path);
     
+    if (![self checkFlush:error]) {
+        return nil;
+    }
+
     return [self.volume contentsOfDirectoryAtPath:path error:error];
 }
 
@@ -193,12 +210,22 @@ NS_ASSUME_NONNULL_BEGIN
                                 userData:(id)userData
                                    error:(NSError **)error {
     NSLog(@"attributesOfItemAtPath: %@", path);
+
+    if (![self checkFlush:error]) {
+        return nil;
+    }
+
     return [self.volume attributesOfItemAtPath:path userData:userData error:error];
 }
 
 - (NSDictionary *)attributesOfFileSystemForPath:(NSString *)path
                                           error:(NSError **)error {
     NSLog(@"attributesOfFileSystemForPath: %@", path);
+
+    if (![self checkFlush:error]) {
+        return nil;
+    }
+
     return [self.volume attributesOfFileSystemForPath: path error:error];
 }
 
@@ -208,6 +235,11 @@ NS_ASSUME_NONNULL_BEGIN
                 error:(NSError **)error
 {
     NSLog(@"setAttributes: %@", path);
+
+    if (![self checkFlush:error]) {
+        return NO;
+    }
+
     return [self.volume setAttributes:attributes
                          ofItemAtPath:path
                              userData:userData
@@ -217,7 +249,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)willUnmount
 {
     NSLog(@"willUnmount");
-    [self.volume unmount];
+    
+    NSError* error;
+    
+    [self.volume unmount:&error];
 }
 
 #pragma mark Extended Attributes
@@ -225,6 +260,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray *)extendedAttributesOfItemAtPath:(NSString *)path error:(NSError **)error
 {
     NSLog(@"extendedAttributesOfItemAtPath: %@", path);
+
+    if (![self checkFlush:error]) {
+        return nil;
+    }
 
     return [self.volume extendedAttributesOfItemAtPath:path error:error];
 }
@@ -235,6 +274,11 @@ NS_ASSUME_NONNULL_BEGIN
                                error:(NSError **)error
 {
     NSLog(@"valueOfExtendedAttribute: %@ ofItemAtPath: %@", name, path);
+
+    if (![self checkFlush:error]) {
+        return nil;
+    }
+
     return [self.volume valueOfExtendedAttribute:name ofItemAtPath:path position:position error:error];
 }
 
@@ -247,6 +291,10 @@ NS_ASSUME_NONNULL_BEGIN
 {
     NSLog(@"setExtendedAttribute: %@ ofItemAtPath: %@", name, path);
     
+    if (![self checkFlush:error]) {
+        return NO;
+    }
+
     return [self.volume setExtendedAttribute:name ofItemAtPath:path value:value position:position options:options error:error];
 }
 
@@ -255,6 +303,11 @@ NS_ASSUME_NONNULL_BEGIN
                           error:(NSError **)error
 {
     NSLog(@"removeExtendedAttribute: %@", path);
+
+    if (![self checkFlush:error]) {
+        return NO;
+    }
+
     return [self.volume removeExtendedAttribute:name ofItemAtPath:path error:error];
 }
 
