@@ -109,12 +109,13 @@ typedef struct {
     return _volumeName;
 }
 
-- (NSDictionary*)attributesOfFileSystemForPath:(NSString*) path error:(NSError**) error
+- (NSDictionary* _Nullable)attributesOfFileSystemForPath:(NSString*) path error:(NSError**) error
 {
     hfsvolent entry;
 
     if (hfs_vstat(self.hfsVolume, &entry) == -1) {
-        *error = HFS_ERROR;
+        if (error)
+            *error = HFS_ERROR;
         return nil;
     }
     
@@ -137,7 +138,7 @@ typedef struct {
     return attributes;
 }
 
-- (NSDictionary*)attributesOfItemAtPath:(NSString *)path userData:(id)userData error:(NSError **)error
+- (NSDictionary* _Nullable)attributesOfItemAtPath:(NSString *)path userData:(id)userData error:(NSError **)error
 {
     hfsdirent entry;
 
@@ -145,7 +146,8 @@ typedef struct {
         HFSFile* file = userData;
 
         if (hfs_fstat(file.file, &entry) == -1) {
-            *error = HFS_ERROR;
+            if (error)
+                *error = HFS_ERROR;
             return nil;
         }
     } else {
@@ -199,7 +201,8 @@ typedef struct {
     hfsdir * dir = hfs_opendir(self.hfsVolume, [path cStringUsingEncoding:NSMacOSRomanStringEncoding]);
     
     if (!dir) {
-        *error = HFS_ERROR;
+        if (error)
+            *error = HFS_ERROR;
         return nil;
     }
     
@@ -225,7 +228,8 @@ typedef struct {
     path = [self.volumeName stringByAppendingString:path];
     
     if(hfs_mkdir(self.hfsVolume, [path cStringUsingEncoding:NSMacOSRomanStringEncoding]) == -1) {
-        *error = HFS_ERROR;
+        if (error)
+            *error = HFS_ERROR;
         return NO;
     }
     
@@ -242,7 +246,8 @@ typedef struct {
     CONVERT_TO_HFS_PATH(destination);
 
     if( hfs_rename(self.hfsVolume, [source cStringUsingEncoding:NSMacOSRomanStringEncoding], [destination cStringUsingEncoding:NSMacOSRomanStringEncoding]) != 0 ) {
-        *error = HFS_ERROR;
+        if (error)
+            *error = HFS_ERROR;
         return NO;
     }
     
@@ -268,7 +273,8 @@ typedef struct {
     
     if( !file )
     {
-        *error = HFS_ERROR;
+        if (error)
+            *error = HFS_ERROR;
         return NO;
     }
     
@@ -306,7 +312,8 @@ typedef struct {
     CONVERT_TO_HFS_PATH(path);
 
     if( hfs_delete(self.hfsVolume, TO_MACOS_ROMAN_STRING(path)) == -1) {
-        *error = HFS_ERROR;
+        if (error)
+            *error = HFS_ERROR;
         return NO;
     }
 
@@ -324,7 +331,8 @@ typedef struct {
 
     if( !file )
     {
-        *error = HFS_ERROR;
+        if (error)
+            *error = HFS_ERROR;
         return NO;
     }
     
@@ -353,7 +361,8 @@ typedef struct {
     HFSFile* file = userData;
 
     if (hfs_seek(file.file, offset, HFS_SEEK_SET) == -1) {
-        *error = HFS_ERROR;
+        if (error)
+            *error = HFS_ERROR;
         return -1;
     }
     
@@ -376,7 +385,8 @@ typedef struct {
     HFSFile* file = userData;
 
     if (hfs_seek(file.file, offset, HFS_SEEK_SET) == -1) {
-        *error = HFS_ERROR;
+        if (error)
+            *error = HFS_ERROR;
         return -1;
     }
     
@@ -404,7 +414,8 @@ typedef struct {
             pFile = hfs_open(self.hfsVolume, TO_MACOS_ROMAN_STRING(path));
 
             if (!pFile) {
-                *error = HFS_ERROR;
+                if (error)
+                    *error = HFS_ERROR;
                 return NO;
             }
         }
@@ -413,7 +424,8 @@ typedef struct {
             if (!userData)
                 hfs_close(pFile);
 
-            *error = HFS_ERROR;
+            if (error)
+                *error = HFS_ERROR;
             return NO;
         }
 
@@ -437,7 +449,8 @@ typedef struct {
         }
         
         if (result == -1) {
-            *error = HFS_ERROR;
+            if (error)
+                *error = HFS_ERROR;
             return NO;
         }
 
@@ -456,7 +469,8 @@ typedef struct {
         }
 
         if (result == -1) {
-            *error = HFS_ERROR;
+            if (error)
+                *error = HFS_ERROR;
             return NO;
         }
     }
@@ -478,7 +492,8 @@ typedef struct {
     int result = hfs_rmdir(self.hfsVolume, [path cStringUsingEncoding:NSMacOSRomanStringEncoding]);
     
     if (result == -1) {
-        *error = HFS_ERROR;
+        if (error)
+            *error = HFS_ERROR;
         return NO;
     }
     
@@ -511,7 +526,8 @@ typedef struct {
     
     if (self.hfsVolume) {
         if (hfs_umount(self.hfsVolume) == -1) {
-            *error = HFS_ERROR;
+            if (error)
+                *error = HFS_ERROR;
             success = NO;
         }
         
@@ -529,7 +545,8 @@ typedef struct {
     hfsdirent ent;
 
     if (hfs_stat(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &ent) == -1) {
-        *error = HFS_ERROR;
+        if (error)
+            *error = HFS_ERROR;
         return nil;
     }
 
@@ -554,7 +571,8 @@ typedef struct {
         hfsdirent ent;
 
         if (hfs_stat(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &ent) == -1) {
-            *error = HFS_ERROR;
+            if (error)
+                *error = HFS_ERROR;
             return nil;
         }
 
@@ -586,22 +604,24 @@ typedef struct {
         hfsdirent ent;
 
         if (hfs_stat(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &ent) == -1) {
-            *error = HFS_ERROR;
+            if (error)
+                *error = HFS_ERROR;
             return nil;
         }
         
         if (ent.flags & HFS_ISDIR) {
-            *error = [NSError errorWithPOSIXCode:EPERM];
+            if (error)
+                *error = [NSError errorWithPOSIXCode:EPERM];
             return nil;
         }
         
-        size_t byteCount = ent.u.file.rsize;
         hfsfile* file = hfs_open(self.hfsVolume, TO_MACOS_ROMAN_STRING(path));
         
         if (hfs_setfork(file, kResourceFork) == -1) {
             hfs_close(file);
             
-            *error = HFS_ERROR;
+            if (error)
+                *error = HFS_ERROR;
             return nil;
         }
         
@@ -640,7 +660,8 @@ typedef struct {
         hfsdirent ent;
 
         if (hfs_stat(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &ent) == -1) {
-            *error = HFS_ERROR;
+            if (error)
+                *error = HFS_ERROR;
             return nil;
         }
         
@@ -670,7 +691,8 @@ typedef struct {
         }
 
         if (hfs_setattr(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &ent) == -1) {
-            *error = HFS_ERROR;
+            if (error)
+                *error = HFS_ERROR;
             return nil;
         }
         
@@ -683,21 +705,24 @@ typedef struct {
         if (hfs_setfork(file, kResourceFork) == -1) {
             hfs_close(file);
             
-            *error = HFS_ERROR;
+            if (error)
+                *error = HFS_ERROR;
             return NO;
         }
         
         if (hfs_seek(file, 0, HFS_SEEK_SET) == -1) {
             hfs_close(file);
 
-            *error = HFS_ERROR;
+            if (error)
+                *error = HFS_ERROR;
             return NO;
         }
         
         if( hfs_write(file, [value bytes], value.length) == -1 ) {
             hfs_close(file);
 
-            *error = HFS_ERROR;
+            if (error)
+                *error = HFS_ERROR;
             return NO;
         }
 
@@ -708,7 +733,8 @@ typedef struct {
         hfsdirent ent;
 
         if (hfs_stat(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &ent) == -1) {
-            *error = HFS_ERROR;
+            if (error)
+                *error = HFS_ERROR;
             return nil;
         }
 

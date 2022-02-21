@@ -19,8 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (HFSVolume*)mountAtFilePath:(NSString*)filePath;
 
-- (NSDictionary*)attributesOfFileSystemForPath:(NSString*) path error:(NSError**) error;
-- (NSDictionary*)attributesOfItemAtPath:(NSString *)path userData:(id)userData error:(NSError **)error;
+- (NSDictionary* _Nullable)attributesOfFileSystemForPath:(NSString*) path error:(NSError**) error;
+- (NSDictionary* _Nullable)attributesOfItemAtPath:(NSString *)path userData:(id)userData error:(NSError **)error;
 
 - (BOOL)flush:(NSError **)error;
 - (BOOL)unmount:(NSError **)error;

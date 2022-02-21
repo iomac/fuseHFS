@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation HFS
 
-+ (instancetype)mountWithRootPath:(NSString *)rootPath
++ (instancetype _Nullable)mountWithRootPath:(NSString *)rootPath
 {
     HFSVolume* volume = [HFSVolume mountAtFilePath: rootPath];
     
@@ -194,7 +194,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark Directory Contents
 
-- (NSArray *)contentsOfDirectoryAtPath:(NSString *)path error:(NSError **)error {
+- (NSArray * _Nullable)contentsOfDirectoryAtPath:(NSString *)path error:(NSError **)error {
     NSLog(@"contentsOfDirectoryAtPath:%@", path);
     
     if (![self checkFlush:error]) {
@@ -206,7 +206,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark Getting and Setting Attributes
 
-- (NSDictionary *)attributesOfItemAtPath:(NSString *)path
+- (NSDictionary * _Nullable)attributesOfItemAtPath:(NSString *)path
                                 userData:(id)userData
                                    error:(NSError **)error {
     NSLog(@"attributesOfItemAtPath: %@", path);
@@ -218,7 +218,7 @@ NS_ASSUME_NONNULL_BEGIN
     return [self.volume attributesOfItemAtPath:path userData:userData error:error];
 }
 
-- (NSDictionary *)attributesOfFileSystemForPath:(NSString *)path
+- (NSDictionary * _Nullable)attributesOfFileSystemForPath:(NSString *)path
                                           error:(NSError **)error {
     NSLog(@"attributesOfFileSystemForPath: %@", path);
 
@@ -257,7 +257,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark Extended Attributes
 
-- (NSArray *)extendedAttributesOfItemAtPath:(NSString *)path error:(NSError **)error
+- (NSArray * _Nullable)extendedAttributesOfItemAtPath:(NSString *)path error:(NSError **)error
 {
     NSLog(@"extendedAttributesOfItemAtPath: %@", path);
 
@@ -268,7 +268,7 @@ NS_ASSUME_NONNULL_BEGIN
     return [self.volume extendedAttributesOfItemAtPath:path error:error];
 }
 
-- (NSData *)valueOfExtendedAttribute:(NSString *)name
+- (NSData * _Nullable)valueOfExtendedAttribute:(NSString *)name
                         ofItemAtPath:(NSString *)path
                             position:(off_t)position
                                error:(NSError **)error

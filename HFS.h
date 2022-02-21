@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (retain) NSString* rootPath;
 
-+ (instancetype)mountWithRootPath:(NSString *)rootPath;
++ (instancetype _Nullable)mountWithRootPath:(NSString *)rootPath;
 
 @property (nonatomic, readonly) NSString* volumeName;
 
