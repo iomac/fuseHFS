@@ -85,36 +85,7 @@
   [[NSUserDefaults standardUserDefaults] setValue:value forKey:@"LastDriveFile"];
 }
 
-- (void)applicationDidFinishLaunching:(NSNotification *)notification
-{
-  NSOpenPanel* panel = [NSOpenPanel openPanel];
-  
-  panel.delegate = self;
-  panel.canChooseFiles = YES;
-  panel.canChooseDirectories = NO;
-  panel.allowsMultipleSelection = NO;
-
-  if (self.lastDriveFile) {
-    panel.directoryURL = [NSURL URLWithString:self.lastDriveFile];
-  } else {
-    panel.directoryURL = [NSURL fileURLWithPath:[@"~" stringByExpandingTildeInPath]];
-  }
-  
-  NSInteger ret = [panel runModal];
-  
-  if ( ret == NSModalResponseCancel )
-  {
-    exit(0);
-  }
-  
-  NSArray* paths = [panel URLs];
-
-  if ( [paths count] != 1 ) {
-    exit(0);
-  }
-  
-  NSString* rootPath = [[paths objectAtIndex:0] path];
-  
+- (BOOL)mountFileAtPath:(NSString*)rootPath {
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
 
   [center addObserver:self
@@ -142,7 +113,7 @@
       [[NSApplication sharedApplication] terminate:nil];
     }];
     
-    return;
+    return NO;
   }
   
   self.hfs = [HFS mountWithRootPath:rootPath];
@@ -159,7 +130,7 @@
       [[NSApplication sharedApplication] terminate:nil];
     }];
     
-    return;
+    return NO;
   }
 
   NSString* mountPath = [NSString stringWithFormat:@"/Volumes/%@", self.hfs.volumeName];
@@ -174,6 +145,49 @@
   self.fs = [[GMUserFileSystem alloc] initWithDelegate:_hfs isThreadSafe:NO];
 
   [_fs mountAtPath:mountPath withOptions:options];
+  
+  return YES;
+}
+
+- (BOOL)application:(NSApplication *)sender
+           openFile:(NSString *)filename
+{
+  return [self mountFileAtPath:filename];
+}
+
+- (void)applicationDidFinishLaunching:(NSNotification *)notification
+{
+  if (!self.hfs) {
+    NSOpenPanel* panel = [NSOpenPanel openPanel];
+    
+    panel.delegate = self;
+    panel.canChooseFiles = YES;
+    panel.canChooseDirectories = NO;
+    panel.allowsMultipleSelection = NO;
+
+    if (self.lastDriveFile) {
+      panel.directoryURL = [NSURL URLWithString:self.lastDriveFile];
+    } else {
+      panel.directoryURL = [NSURL fileURLWithPath:[@"~" stringByExpandingTildeInPath]];
+    }
+    
+    NSInteger ret = [panel runModal];
+    
+    if ( ret == NSModalResponseCancel )
+    {
+      exit(0);
+    }
+    
+    NSArray* paths = [panel URLs];
+
+    if ( [paths count] != 1 ) {
+      exit(0);
+    }
+    
+    NSString* rootPath = [[paths objectAtIndex:0] path];
+    
+    [self mountFileAtPath:rootPath];
+  }
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
