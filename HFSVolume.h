@@ -17,7 +17,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, retain)   NSDate*     dirtyTimeStamp;
 @property (nonatomic, readonly) NSUInteger  writeCountSinceLastFlush;
 
-+ (HFSVolume*)mountAtFilePath:(NSString*)filePath;
++ (instancetype _Nullable)mountAtFilePath:(NSString*)filePath error:(NSError**) error;
++ (instancetype _Nullable)formatAndMountAtFilePath:(NSString *)filePath error:(NSError**) error;
 
 - (NSDictionary* _Nullable)attributesOfFileSystemForPath:(NSString*) path error:(NSError**) error;
 - (NSDictionary* _Nullable)attributesOfItemAtPath:(NSString *)path userData:(id)userData error:(NSError **)error;

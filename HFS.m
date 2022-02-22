@@ -20,9 +20,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 @implementation HFS
 
-+ (instancetype _Nullable)mountWithRootPath:(NSString *)rootPath
++ (instancetype _Nullable)mountWithRootPath:(NSString *)rootPath error:(NSError**) error
 {
-    HFSVolume* volume = [HFSVolume mountAtFilePath: rootPath];
+    HFSVolume* volume = [HFSVolume mountAtFilePath: rootPath error:error];
+    
+    if (volume) {
+        return [[HFS alloc] initWithVolume:volume rootPath:rootPath];
+    }
+    
+    return nil;
+}
+
++ (instancetype _Nullable)formatAndMountWithRootPath:(NSString *)rootPath error:(NSError**) error
+{
+    HFSVolume* volume = [HFSVolume formatAndMountAtFilePath:rootPath error:error];
     
     if (volume) {
         return [[HFS alloc] initWithVolume:volume rootPath:rootPath];

@@ -40,6 +40,7 @@
 		3CB3924627B071710089D1C6 /* btree.h in Headers */ = {isa = PBXBuildFile; fileRef = 3CB3922B27B071710089D1C6 /* btree.h */; };
 		3CB3924727B071710089D1C6 /* block.h in Headers */ = {isa = PBXBuildFile; fileRef = 3CB3922C27B071710089D1C6 /* block.h */; };
 		3CB3924A27B071A20089D1C6 /* liblibhfs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CB3920427B070F50089D1C6 /* liblibhfs.a */; };
+		3CC6C19D27C4158B009E1BB8 /* NSError+HFS.m in Sources */ = {isa = PBXBuildFile; fileRef = 3CC6C19C27C4158B009E1BB8 /* NSError+HFS.m */; };
 		3CD633D627B0F1A6001FAF1B /* NSException+Helpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 3CD633D527B0F1A6001FAF1B /* NSException+Helpers.m */; };
 		3CE9D30727B22B25002BA719 /* Application.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3CE9D30627B22B25002BA719 /* Application.xib */; };
 		8B93BEEF0D3ACD4400466F25 /* NSError+POSIX.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B93BEED0D3ACD4400466F25 /* NSError+POSIX.m */; };
@@ -114,6 +115,8 @@
 		3CB3922A27B071710089D1C6 /* file.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = file.c; sourceTree = "<group>"; };
 		3CB3922B27B071710089D1C6 /* btree.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = btree.h; sourceTree = "<group>"; };
 		3CB3922C27B071710089D1C6 /* block.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = block.h; sourceTree = "<group>"; };
+		3CC6C19B27C4158B009E1BB8 /* NSError+HFS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSError+HFS.h"; sourceTree = "<group>"; };
+		3CC6C19C27C4158B009E1BB8 /* NSError+HFS.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSError+HFS.m"; sourceTree = "<group>"; };
 		3CD633D427B0F1A6001FAF1B /* NSException+Helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSException+Helpers.h"; sourceTree = "<group>"; };
 		3CD633D527B0F1A6001FAF1B /* NSException+Helpers.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSException+Helpers.m"; sourceTree = "<group>"; };
 		3CE9D30627B22B25002BA719 /* Application.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Application.xib; sourceTree = "<group>"; };
@@ -161,6 +164,8 @@
 				8B93BEED0D3ACD4400466F25 /* NSError+POSIX.m */,
 				3CD633D427B0F1A6001FAF1B /* NSException+Helpers.h */,
 				3CD633D527B0F1A6001FAF1B /* NSException+Helpers.m */,
+				3CC6C19B27C4158B009E1BB8 /* NSError+HFS.h */,
+				3CC6C19C27C4158B009E1BB8 /* NSError+HFS.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -419,6 +424,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3CC6C19D27C4158B009E1BB8 /* NSError+HFS.m in Sources */,
 				3C8863FD27AFA06F00FBE8A4 /* HFS.m in Sources */,
 				3CD633D627B0F1A6001FAF1B /* NSException+Helpers.m in Sources */,
 				8D11072D0486CEB800E47090 /* main.m in Sources */,

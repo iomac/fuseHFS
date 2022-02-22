@@ -12,6 +12,8 @@
 
 @interface FuseHFSController () <NSOpenSavePanelDelegate>
 
+@property (strong) IBOutlet NSWindow *window;
+
 @property (nonatomic, retain) GMUserFileSystem* fs;
 @property (nonatomic, retain) HFS* hfs;
 
@@ -85,7 +87,7 @@
   [[NSUserDefaults standardUserDefaults] setValue:value forKey:@"LastDriveFile"];
 }
 
-- (BOOL)mountFileAtPath:(NSString*)rootPath {
+- (void)registerNotifications {
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
 
   [center addObserver:self
@@ -97,33 +99,45 @@
   [center addObserver:self
              selector:@selector(didUnmount:)
                  name:kGMUserFileSystemDidUnmount object:nil];
-  
-  
-  NSString* iconPath = [[NSBundle mainBundle] pathForResource:@"fuseHFS" ofType:@"icns"];
-  
-  if (!iconPath) {
-    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
-      NSAlert* alert = [[NSAlert alloc] init];
-      
-      alert.messageText = @"Mount Failed";
-      alert.informativeText = @"Unable to locate drive icon in bundle";
+}
 
-      [alert runModal];
-      
-      [[NSApplication sharedApplication] terminate:nil];
-    }];
-    
-    return NO;
-  }
+- (NSString*)driveIconPath {
+  NSString* iconPath = [[NSBundle mainBundle] pathForResource:@"fuseHFS" ofType:@"icns"];
+
+  NSAssert(iconPath, @"Unable to locate drive icon in bundle");
   
-  self.hfs = [HFS mountWithRootPath:rootPath];
+  return iconPath;
+}
+
+- (BOOL)mountVolume {
+  NSString* mountPath = [NSString stringWithFormat:@"/Volumes/%@", self.hfs.volumeName];
+
+  NSMutableArray* options = [[NSMutableArray alloc] initWithArray:@[
+    [NSString stringWithFormat:@"volicon=%@", self.driveIconPath],
+    @"native_xattr", // TODO: is this valid or necessary for HFS?
+    [NSString stringWithFormat:@"volname=%@", self.hfs.volumeName]
+  ]];
+
+  self.fs = [[GMUserFileSystem alloc] initWithDelegate:_hfs isThreadSafe:NO];
+
+  [_fs mountAtPath:mountPath withOptions:options];
+  
+  return YES;
+}
+
+- (BOOL)mountFileAtPath:(NSString*)rootPath {
+  
+  [self registerNotifications];
+
+  NSError* error;
+  self.hfs = [HFS mountWithRootPath:rootPath error:&error];
 
   if (!_hfs) {
     [[NSOperationQueue mainQueue] addOperationWithBlock:^{
       NSAlert* alert = [[NSAlert alloc] init];
       
       alert.messageText = @"Mount Failed";
-      alert.informativeText = @"mountWithRootPath failed";
+      alert.informativeText = [NSString stringWithFormat:@"mountWithRootPath failed with error: %@", error];
 
       [alert runModal];
       
@@ -133,20 +147,31 @@
     return NO;
   }
 
-  NSString* mountPath = [NSString stringWithFormat:@"/Volumes/%@", self.hfs.volumeName];
+  return [self mountVolume];
+}
 
-  NSMutableArray* options = [[NSMutableArray alloc] initWithArray:@[
-    [NSString stringWithFormat:@"volicon=%@", iconPath],
-    @"native_xattr", // TODO: is this valid or necessary for HFS?
-    [NSString stringWithFormat:@"volname=%@", self.hfs.volumeName]
-  ]];
+- (BOOL)formatAndMountFileAtPath:(NSString*)rootPath {
+  [self registerNotifications];
 
-  self.lastDriveFile = rootPath;
-  self.fs = [[GMUserFileSystem alloc] initWithDelegate:_hfs isThreadSafe:NO];
+  NSError* error;
+  self.hfs = [HFS formatAndMountWithRootPath:rootPath error:&error];
 
-  [_fs mountAtPath:mountPath withOptions:options];
-  
-  return YES;
+  if (!_hfs) {
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+      NSAlert* alert = [[NSAlert alloc] init];
+      
+      alert.messageText = @"Format & Mount Failed";
+      alert.informativeText = [NSString stringWithFormat:@"formatAndMountWithRootPath failed with error: %@", error];
+
+      [alert runModal];
+      
+      [[NSApplication sharedApplication] terminate:nil];
+    }];
+    
+    return NO;
+  }
+
+  return [self mountVolume];
 }
 
 - (BOOL)application:(NSApplication *)sender
@@ -157,36 +182,9 @@
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
-  if (!self.hfs) {
-    NSOpenPanel* panel = [NSOpenPanel openPanel];
-    
-    panel.delegate = self;
-    panel.canChooseFiles = YES;
-    panel.canChooseDirectories = NO;
-    panel.allowsMultipleSelection = NO;
-
-    if (self.lastDriveFile) {
-      panel.directoryURL = [NSURL URLWithString:self.lastDriveFile];
-    } else {
-      panel.directoryURL = [NSURL fileURLWithPath:[@"~" stringByExpandingTildeInPath]];
-    }
-    
-    NSInteger ret = [panel runModal];
-    
-    if ( ret == NSModalResponseCancel )
-    {
-      exit(0);
-    }
-    
-    NSArray* paths = [panel URLs];
-
-    if ( [paths count] != 1 ) {
-      exit(0);
-    }
-    
-    NSString* rootPath = [[paths objectAtIndex:0] path];
-    
-    [self mountFileAtPath:rootPath];
+  if (self.hfs) {
+    [[NSRunningApplication currentApplication] hide];
+    [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
   }
 }
 
@@ -197,6 +195,62 @@
   [_fs unmount];
   
   return NSTerminateNow;
+}
+
+- (void)selectImageFile:(void (^)(NSString* path))callback {
+  NSOpenPanel* panel = [NSOpenPanel openPanel];
+  
+  panel.delegate = self;
+  panel.canChooseFiles = YES;
+  panel.canChooseDirectories = NO;
+  panel.allowsMultipleSelection = NO;
+
+  if (self.lastDriveFile) {
+    panel.directoryURL = [NSURL URLWithString:self.lastDriveFile];
+  } else {
+    panel.directoryURL = [NSURL fileURLWithPath:[@"~" stringByExpandingTildeInPath]];
+  }
+  
+  NSInteger ret = [panel runModal];
+  
+  if ( ret == NSModalResponseCancel )
+  {
+    callback(nil);
+    return;
+  }
+  
+  NSArray* paths = [panel URLs];
+
+  if ( [paths count] != 1 ) {
+    callback(nil);
+    return;
+  }
+
+  NSString* path = [[paths objectAtIndex:0] path];
+  self.lastDriveFile = path;
+
+  callback(path);
+}
+
+- (IBAction)openImage:(id)sender {
+  
+  [self selectImageFile:^(NSString *path) {
+    [self mountFileAtPath:path];
+    
+    [self.window close];
+  }];
+}
+
+- (IBAction)createImage:(id)sender {
+  
+}
+
+- (IBAction)formatImage:(id)sender {
+  [self selectImageFile:^(NSString *path) {
+    if (path) {
+      [self formatAndMountFileAtPath:path];
+    }
+  }];
 }
 
 @end

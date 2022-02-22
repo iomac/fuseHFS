@@ -33,9 +33,23 @@
 			<array>
 				<string>hda</string>
 			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>ISO Readonly Disk Image</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>iso</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
 		</dict>
 	</array>
 	<key>LSUIElement</key>
-	<true/>
+	<false/>
 </dict>
 </plist>

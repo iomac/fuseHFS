@@ -9,6 +9,8 @@
 #import <macFUSE/macFUSE.h>
 #import "NSException+Helpers.h"
 #import "NSError+POSIX.h"
+#import "NSError+HFS.h"
+
 extern "C"
 {
     #include "libhfs.h"
@@ -73,18 +75,63 @@ typedef struct {
     return self;
 }
 
-+ (HFSVolume*)mountAtFilePath:(NSString*)filePath;
++ (HFSVolume*)mountAtFilePath:(NSString*)filePath error:(NSError**) error
 {
     // TODO: Handle case where there are multiple partitions
     int partitionNumber = 1;
     hfsvol* volume = hfs_mount(filePath.UTF8String, partitionNumber, HFS_MODE_ANY);
     
     if (volume == NULL) {
-        // TODO: Better error handling?
-        @throw [NSException exceptionWithName:@"HFS Failure" reason:@"Unable to mount volume" userInfo:nil];
+        NSError* hfsError = HFS_ERROR;
+        
+        BOOL isHda = [@"hda" isEqualToString:[filePath pathExtension]];
+        BOOL isInvalidFormat = hfsError.code == EINVAL && [@"invalid partition map" isEqualToString:hfsError.userInfo[@"message"]];
+        
+        if (error) {
+            if ( isHda && isInvalidFormat ) {
+                *error = [NSError invalidFormatError];
+            } else {
+                // TODO: Better error handling?
+                *error = hfsError;
+            }
+        }
+        
+        return nil;
     }
     
     return [[HFSVolume alloc] initWithVolume:volume];
+}
+
++ (instancetype _Nullable)formatAndMountAtFilePath:(NSString *)filePath error:(NSError**) error {
+    const char* path = [filePath cStringUsingEncoding:NSMacOSRomanStringEncoding];
+    const char* volumeName = [@"Untitled" cStringUsingEncoding:NSMacOSRomanStringEncoding];
+        
+    unsigned long blocks = 0;
+    if (hfs_zero(path, 1, &blocks) == -1) {
+        if (error) {
+            *error = HFS_ERROR;
+        }
+        
+        return nil;
+    }
+    
+    if (hfs_mkpart(path, blocks) == -1) {
+        if (error) {
+            *error = HFS_ERROR;
+        }
+        
+        return nil;
+    }
+    
+    if (hfs_format(path, 1, HFS_MODE_RDWR, volumeName, 0, NULL) == -1 ) {
+        if (error) {
+            *error = HFS_ERROR;
+        }
+        
+        return nil;
+    }
+    
+    return [self mountAtFilePath:filePath error:error];
 }
 
 - (void)incrementWriteCount {
@@ -132,6 +179,10 @@ typedef struct {
     attributes[kGMUserFileSystemVolumeMaxFilenameLengthKey] = @(27);
     attributes[kGMUserFileSystemVolumeFileSystemBlockSizeKey] = @(entry.alblocksz);
     attributes[kGMUserFileSystemVolumeSupportsAllocateKey] = @NO;
+    
+    if ( !(entry.flags & HFS_ISLOCKED)) {
+        attributes[kGMUserFileSystemVolumeSupportsSetVolumeNameKey] = @YES;
+    }
     
     //NSLog(@"%@", attributes);
     
