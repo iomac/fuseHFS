@@ -713,7 +713,7 @@ typedef struct {
         if (hfs_stat(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &ent) == -1) {
             if (error)
                 *error = HFS_ERROR;
-            return nil;
+            return NO;
         }
         
         FinderInfo finderInfo = {0};
@@ -744,7 +744,7 @@ typedef struct {
         if (hfs_setattr(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &ent) == -1) {
             if (error)
                 *error = HFS_ERROR;
-            return nil;
+            return NO;
         }
         
         [self incrementWriteCount];
@@ -786,7 +786,7 @@ typedef struct {
         if (hfs_stat(self.hfsVolume, TO_MACOS_ROMAN_STRING(path), &ent) == -1) {
             if (error)
                 *error = HFS_ERROR;
-            return nil;
+            return NO;
         }
 
         return YES;
