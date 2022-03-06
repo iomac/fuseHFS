@@ -10,6 +10,14 @@
 #import <macFUSE/macFUSE.h>
 #import "NSException+Helpers.h"
 
+extern "C"
+{
+    #include "libhfs.h"
+}
+
+#define TO_MACOS_ROMAN_STRING(__str__) [__str__ cStringUsingEncoding:NSMacOSRomanStringEncoding]
+
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface HFS()
@@ -19,6 +27,13 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @implementation HFS
+
++ (BOOL)isValidVolume:(NSString*)path
+{
+    int partitionCount = hfs_nparts(TO_MACOS_ROMAN_STRING(path));
+    
+    return partitionCount > 0;
+}
 
 + (instancetype _Nullable)mountWithRootPath:(NSString *)rootPath error:(NSError**) error
 {

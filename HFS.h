@@ -13,6 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (retain) NSString* rootPath;
 
++ (BOOL)isValidVolume:(NSString*)path;
+
 + (instancetype _Nullable)mountWithRootPath:(NSString *)rootPath error:(NSError**) error;
 + (instancetype _Nullable)formatAndMountWithRootPath:(NSString *)rootPath error:(NSError**) error;
 

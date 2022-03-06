@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "8D1107260486CEB800E47090"
-               BuildableName = "fuseHFS.app"
-               BlueprintName = "fuseHFS"
+               BlueprintIdentifier = "3CD0DE3D27CF47FD00A2E6F1"
+               BuildableName = "fuseHFS_agent.app"
+               BlueprintName = "fuseHFS_agent"
                ReferencedContainer = "container:fuseHFS.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -44,9 +44,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "8D1107260486CEB800E47090"
-            BuildableName = "fuseHFS.app"
-            BlueprintName = "fuseHFS"
+            BlueprintIdentifier = "3CD0DE3D27CF47FD00A2E6F1"
+            BuildableName = "fuseHFS_agent.app"
+            BlueprintName = "fuseHFS_agent"
             ReferencedContainer = "container:fuseHFS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -61,9 +61,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "8D1107260486CEB800E47090"
-            BuildableName = "fuseHFS.app"
-            BlueprintName = "fuseHFS"
+            BlueprintIdentifier = "3CD0DE3D27CF47FD00A2E6F1"
+            BuildableName = "fuseHFS_agent.app"
+            BlueprintName = "fuseHFS_agent"
             ReferencedContainer = "container:fuseHFS.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

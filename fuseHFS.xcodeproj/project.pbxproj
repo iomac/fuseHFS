@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		3C8863F827AF986600FBE8A4 /* macFUSE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C8863F727AF986600FBE8A4 /* macFUSE.framework */; };
 		3C8863F927AF986600FBE8A4 /* macFUSE.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3C8863F727AF986600FBE8A4 /* macFUSE.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		3C8863FD27AFA06F00FBE8A4 /* HFS.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C8863FC27AFA06F00FBE8A4 /* HFS.m */; };
+		3C8863FD27AFA06F00FBE8A4 /* HFS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3C8863FC27AFA06F00FBE8A4 /* HFS.mm */; };
 		3C88640227AFA8C600FBE8A4 /* HFSVolume.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3C88640127AFA8C600FBE8A4 /* HFSVolume.mm */; };
 		3C942B9727B080C600557F36 /* unix.c in Sources */ = {isa = PBXBuildFile; fileRef = 3C942B9627B080C600557F36 /* unix.c */; };
 		3CB3922D27B071710089D1C6 /* hfs.h in Headers */ = {isa = PBXBuildFile; fileRef = 3CB3920D27B071700089D1C6 /* hfs.h */; };
@@ -41,6 +41,19 @@
 		3CB3924727B071710089D1C6 /* block.h in Headers */ = {isa = PBXBuildFile; fileRef = 3CB3922C27B071710089D1C6 /* block.h */; };
 		3CB3924A27B071A20089D1C6 /* liblibhfs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CB3920427B070F50089D1C6 /* liblibhfs.a */; };
 		3CC6C19D27C4158B009E1BB8 /* NSError+HFS.m in Sources */ = {isa = PBXBuildFile; fileRef = 3CC6C19C27C4158B009E1BB8 /* NSError+HFS.m */; };
+		3CD0DE4227CF47FD00A2E6F1 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3CD0DE4127CF47FD00A2E6F1 /* AppDelegate.m */; };
+		3CD0DE4427CF47FE00A2E6F1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3CD0DE4327CF47FE00A2E6F1 /* Assets.xcassets */; };
+		3CD0DE4927CF47FE00A2E6F1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 3CD0DE4827CF47FE00A2E6F1 /* main.m */; };
+		3CD0DE5227CF484300A2E6F1 /* macFUSE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C8863F727AF986600FBE8A4 /* macFUSE.framework */; };
+		3CD0DE5327CF484700A2E6F1 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		3CD0DE5427CF485100A2E6F1 /* liblibhfs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CB3920427B070F50089D1C6 /* liblibhfs.a */; };
+		3CD0DE5527CF48C900A2E6F1 /* NSError+HFS.m in Sources */ = {isa = PBXBuildFile; fileRef = 3CC6C19C27C4158B009E1BB8 /* NSError+HFS.m */; };
+		3CD0DE5627CF48CD00A2E6F1 /* NSException+Helpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 3CD633D527B0F1A6001FAF1B /* NSException+Helpers.m */; };
+		3CD0DE5727CF48D200A2E6F1 /* NSError+POSIX.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B93BEED0D3ACD4400466F25 /* NSError+POSIX.m */; };
+		3CD0DE5827CF48DC00A2E6F1 /* HFS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3C8863FC27AFA06F00FBE8A4 /* HFS.mm */; };
+		3CD0DE5927CF48DC00A2E6F1 /* HFSVolume.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3C88640127AFA8C600FBE8A4 /* HFSVolume.mm */; };
+		3CD0DE5B27CF4D1300A2E6F1 /* fuseHFS.icns in Resources */ = {isa = PBXBuildFile; fileRef = FF98B8DF0D2496B900117156 /* fuseHFS.icns */; };
+		3CD0DE5C27D48B9F00A2E6F1 /* fuseHFS_agent.app in Resources */ = {isa = PBXBuildFile; fileRef = 3CD0DE3E27CF47FD00A2E6F1 /* fuseHFS_agent.app */; };
 		3CD633D627B0F1A6001FAF1B /* NSException+Helpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 3CD633D527B0F1A6001FAF1B /* NSException+Helpers.m */; };
 		3CE9D30727B22B25002BA719 /* Application.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3CE9D30627B22B25002BA719 /* Application.xib */; };
 		8B93BEEF0D3ACD4400466F25 /* NSError+POSIX.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B93BEED0D3ACD4400466F25 /* NSError+POSIX.m */; };
@@ -52,6 +65,20 @@
 
 /* Begin PBXContainerItemProxy section */
 		3CB3924827B0718D0089D1C6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3CB3920327B070F50089D1C6;
+			remoteInfo = libhfs;
+		};
+		3CD0DE4E27CF481500A2E6F1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3CD0DE3D27CF47FD00A2E6F1;
+			remoteInfo = fuseHFS_agent;
+		};
+		3CD0DE5027CF481B00A2E6F1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
 			proxyType = 1;
@@ -83,7 +110,7 @@
 		32CA4F630368D1EE00C91783 /* fuseHFS_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fuseHFS_Prefix.pch; sourceTree = "<group>"; };
 		3C8863F727AF986600FBE8A4 /* macFUSE.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = macFUSE.framework; path = /Library/Frameworks/macFUSE.framework; sourceTree = "<absolute>"; };
 		3C8863FB27AFA03700FBE8A4 /* HFS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HFS.h; sourceTree = "<group>"; };
-		3C8863FC27AFA06F00FBE8A4 /* HFS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HFS.m; sourceTree = "<group>"; };
+		3C8863FC27AFA06F00FBE8A4 /* HFS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HFS.mm; sourceTree = "<group>"; };
 		3C88640027AFA8C600FBE8A4 /* HFSVolume.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HFSVolume.h; sourceTree = "<group>"; };
 		3C88640127AFA8C600FBE8A4 /* HFSVolume.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = HFSVolume.mm; sourceTree = "<group>"; };
 		3C942B9627B080C600557F36 /* unix.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = unix.c; sourceTree = "<group>"; };
@@ -117,6 +144,13 @@
 		3CB3922C27B071710089D1C6 /* block.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = block.h; sourceTree = "<group>"; };
 		3CC6C19B27C4158B009E1BB8 /* NSError+HFS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSError+HFS.h"; sourceTree = "<group>"; };
 		3CC6C19C27C4158B009E1BB8 /* NSError+HFS.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSError+HFS.m"; sourceTree = "<group>"; };
+		3CD0DE3E27CF47FD00A2E6F1 /* fuseHFS_agent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = fuseHFS_agent.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3CD0DE4027CF47FD00A2E6F1 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		3CD0DE4127CF47FD00A2E6F1 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		3CD0DE4327CF47FE00A2E6F1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3CD0DE4827CF47FE00A2E6F1 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		3CD0DE4A27CF47FE00A2E6F1 /* fuseHFS_agent.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = fuseHFS_agent.entitlements; sourceTree = "<group>"; };
+		3CD0DE5A27CF49B600A2E6F1 /* fuseHFS-agent-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "fuseHFS-agent-Info.plist"; sourceTree = SOURCE_ROOT; };
 		3CD633D427B0F1A6001FAF1B /* NSException+Helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSException+Helpers.h"; sourceTree = "<group>"; };
 		3CD633D527B0F1A6001FAF1B /* NSException+Helpers.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSException+Helpers.m"; sourceTree = "<group>"; };
 		3CE9D30627B22B25002BA719 /* Application.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = Application.xib; sourceTree = "<group>"; };
@@ -138,6 +172,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3CD0DE3B27CF47FD00A2E6F1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3CD0DE5327CF484700A2E6F1 /* Cocoa.framework in Frameworks */,
+				3CD0DE5227CF484300A2E6F1 /* macFUSE.framework in Frameworks */,
+				3CD0DE5427CF485100A2E6F1 /* liblibhfs.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D11072E0486CEB800E47090 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -155,7 +199,7 @@
 			isa = PBXGroup;
 			children = (
 				3C8863FB27AFA03700FBE8A4 /* HFS.h */,
-				3C8863FC27AFA06F00FBE8A4 /* HFS.m */,
+				3C8863FC27AFA06F00FBE8A4 /* HFS.mm */,
 				3C88640027AFA8C600FBE8A4 /* HFSVolume.h */,
 				3C88640127AFA8C600FBE8A4 /* HFSVolume.mm */,
 				FF98B8B60D24909700117156 /* FuseHFSController.h */,
@@ -193,6 +237,7 @@
 			children = (
 				8D1107320486CEB800E47090 /* fuseHFS.app */,
 				3CB3920427B070F50089D1C6 /* liblibhfs.a */,
+				3CD0DE3E27CF47FD00A2E6F1 /* fuseHFS_agent.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -205,6 +250,7 @@
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				3CB3920527B070F50089D1C6 /* libhfs */,
+				3CD0DE3F27CF47FD00A2E6F1 /* fuseHFS_agent */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 			);
@@ -284,6 +330,19 @@
 			path = "hfsutils/hfsutils-master/libhfs";
 			sourceTree = SOURCE_ROOT;
 		};
+		3CD0DE3F27CF47FD00A2E6F1 /* fuseHFS_agent */ = {
+			isa = PBXGroup;
+			children = (
+				3CD0DE5A27CF49B600A2E6F1 /* fuseHFS-agent-Info.plist */,
+				3CD0DE4027CF47FD00A2E6F1 /* AppDelegate.h */,
+				3CD0DE4127CF47FD00A2E6F1 /* AppDelegate.m */,
+				3CD0DE4327CF47FE00A2E6F1 /* Assets.xcassets */,
+				3CD0DE4827CF47FE00A2E6F1 /* main.m */,
+				3CD0DE4A27CF47FE00A2E6F1 /* fuseHFS_agent.entitlements */,
+			);
+			path = fuseHFS_agent;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -329,6 +388,24 @@
 			productReference = 3CB3920427B070F50089D1C6 /* liblibhfs.a */;
 			productType = "com.apple.product-type.library.static";
 		};
+		3CD0DE3D27CF47FD00A2E6F1 /* fuseHFS_agent */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3CD0DE4D27CF47FE00A2E6F1 /* Build configuration list for PBXNativeTarget "fuseHFS_agent" */;
+			buildPhases = (
+				3CD0DE3A27CF47FD00A2E6F1 /* Sources */,
+				3CD0DE3B27CF47FD00A2E6F1 /* Frameworks */,
+				3CD0DE3C27CF47FD00A2E6F1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3CD0DE5127CF481B00A2E6F1 /* PBXTargetDependency */,
+			);
+			name = fuseHFS_agent;
+			productName = fuseHFS_agent;
+			productReference = 3CD0DE3E27CF47FD00A2E6F1 /* fuseHFS_agent.app */;
+			productType = "com.apple.product-type.application";
+		};
 		8D1107260486CEB800E47090 /* fuseHFS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "fuseHFS" */;
@@ -342,6 +419,7 @@
 			);
 			dependencies = (
 				3CB3924927B0718D0089D1C6 /* PBXTargetDependency */,
+				3CD0DE4F27CF481500A2E6F1 /* PBXTargetDependency */,
 			);
 			name = fuseHFS;
 			productInstallPath = "$(HOME)/Applications";
@@ -358,6 +436,9 @@
 				LastUpgradeCheck = 1320;
 				TargetAttributes = {
 					3CB3920327B070F50089D1C6 = {
+						CreatedOnToolsVersion = 13.2.1;
+					};
+					3CD0DE3D27CF47FD00A2E6F1 = {
 						CreatedOnToolsVersion = 13.2.1;
 					};
 					8D1107260486CEB800E47090 = {
@@ -383,15 +464,26 @@
 			targets = (
 				8D1107260486CEB800E47090 /* fuseHFS */,
 				3CB3920327B070F50089D1C6 /* libhfs */,
+				3CD0DE3D27CF47FD00A2E6F1 /* fuseHFS_agent */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		3CD0DE3C27CF47FD00A2E6F1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3CD0DE4427CF47FE00A2E6F1 /* Assets.xcassets in Resources */,
+				3CD0DE5B27CF4D1300A2E6F1 /* fuseHFS.icns in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D1107290486CEB800E47090 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3CD0DE5C27D48B9F00A2E6F1 /* fuseHFS_agent.app in Resources */,
 				FF98B8E00D2496B900117156 /* fuseHFS.icns in Resources */,
 				3CE9D30727B22B25002BA719 /* Application.xib in Resources */,
 			);
@@ -420,12 +512,26 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3CD0DE3A27CF47FD00A2E6F1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3CD0DE4927CF47FE00A2E6F1 /* main.m in Sources */,
+				3CD0DE5727CF48D200A2E6F1 /* NSError+POSIX.m in Sources */,
+				3CD0DE4227CF47FD00A2E6F1 /* AppDelegate.m in Sources */,
+				3CD0DE5827CF48DC00A2E6F1 /* HFS.mm in Sources */,
+				3CD0DE5627CF48CD00A2E6F1 /* NSException+Helpers.m in Sources */,
+				3CD0DE5527CF48C900A2E6F1 /* NSError+HFS.m in Sources */,
+				3CD0DE5927CF48DC00A2E6F1 /* HFSVolume.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D11072C0486CEB800E47090 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				3CC6C19D27C4158B009E1BB8 /* NSError+HFS.m in Sources */,
-				3C8863FD27AFA06F00FBE8A4 /* HFS.m in Sources */,
+				3C8863FD27AFA06F00FBE8A4 /* HFS.mm in Sources */,
 				3CD633D627B0F1A6001FAF1B /* NSException+Helpers.m in Sources */,
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
 				FF98B8B80D24909700117156 /* FuseHFSController.m in Sources */,
@@ -441,6 +547,16 @@
 			isa = PBXTargetDependency;
 			target = 3CB3920327B070F50089D1C6 /* libhfs */;
 			targetProxy = 3CB3924827B0718D0089D1C6 /* PBXContainerItemProxy */;
+		};
+		3CD0DE4F27CF481500A2E6F1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3CD0DE3D27CF47FD00A2E6F1 /* fuseHFS_agent */;
+			targetProxy = 3CD0DE4E27CF481500A2E6F1 /* PBXContainerItemProxy */;
+		};
+		3CD0DE5127CF481B00A2E6F1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3CB3920327B070F50089D1C6 /* libhfs */;
+			targetProxy = 3CD0DE5027CF481B00A2E6F1 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -516,6 +632,109 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		3CD0DE4B27CF47FE00A2E6F1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = fuseHFS_agent/fuseHFS_agent.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "fuseHFS-agent-Info.plist";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainNibFile = MainMenu;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 12.1;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nobody.fuseHFS-agent";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		3CD0DE4C27CF47FE00A2E6F1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = fuseHFS_agent/fuseHFS_agent.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(LOCAL_LIBRARY_DIR)/Frameworks",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_VARIABLE = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "fuseHFS-agent-Info.plist";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainNibFile = MainMenu;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 12.1;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.nobody.fuseHFS-agent";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
 			name = Release;
 		};
@@ -664,6 +883,15 @@
 			buildConfigurations = (
 				3CB3920B27B070F50089D1C6 /* Debug */,
 				3CB3920C27B070F50089D1C6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3CD0DE4D27CF47FE00A2E6F1 /* Build configuration list for PBXNativeTarget "fuseHFS_agent" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3CD0DE4B27CF47FE00A2E6F1 /* Debug */,
+				3CD0DE4C27CF47FE00A2E6F1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
