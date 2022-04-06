@@ -7,6 +7,7 @@
 #import "FuseHFSController.h"
 #import "HFS.h"
 #import <macFUSE/macFUSE.h>
+#import "FileInspector.h"
 
 #import <AvailabilityMacros.h>
 
@@ -63,19 +64,13 @@
 
 - (BOOL)panel:(id)sender shouldEnableURL:(NSURL *)url {
   NSString* ext = [url pathExtension];
-  
-  if ([@"" isEqualToString:ext]) {
-    return YES;
-  }
-  
-  if ([@"hda" isEqualToString:ext]) {
-    return YES;
-  }
 
-  if ([@"dsk" isEqualToString:ext]) {
-    return YES;
+  for (NSString* e in  @[@"",@"hda",@"dsk",@"iso",@"image",@"toast",@"img",@"dmg"]) {
+    if ([e isEqualToString:ext]) {
+      return YES;
+    }
   }
-
+  
   return NO;
 }
 
@@ -115,7 +110,10 @@
   NSMutableArray* options = [[NSMutableArray alloc] initWithArray:@[
     [NSString stringWithFormat:@"volicon=%@", self.driveIconPath],
     @"native_xattr", // TODO: is this valid or necessary for HFS?
-    [NSString stringWithFormat:@"volname=%@", self.hfs.volumeName]
+    [NSString stringWithFormat:@"volname=%@", self.hfs.volumeName],
+    [NSString stringWithFormat:@"fstypename=HFS"],
+    [NSString stringWithFormat:@"fsname=fuseHFS"],
+    
   ]];
 
   self.fs = [[GMUserFileSystem alloc] initWithDelegate:_hfs isThreadSafe:NO];
@@ -197,7 +195,7 @@
   return NSTerminateNow;
 }
 
-- (void)selectImageFile:(void (^)(NSString* path))callback {
+- (void)selectImageFile:(void (^)(NSString* path, ImageFileType* fileType))callback {
   NSOpenPanel* panel = [NSOpenPanel openPanel];
   
   panel.delegate = self;
@@ -215,26 +213,26 @@
   
   if ( ret == NSModalResponseCancel )
   {
-    callback(nil);
+    callback(nil, nil);
     return;
   }
   
   NSArray* paths = [panel URLs];
 
   if ( [paths count] != 1 ) {
-    callback(nil);
+    callback(nil, nil);
     return;
   }
 
   NSString* path = [[paths objectAtIndex:0] path];
   self.lastDriveFile = path;
-
-  callback(path);
+  
+  callback(path, [FileInspector typeForFilePath:path error:nil]);
 }
 
 - (IBAction)openImage:(id)sender {
   
-  [self selectImageFile:^(NSString *path) {
+  [self selectImageFile:^(NSString *path, ImageFileType* fileType) {
     [self mountFileAtPath:path];
     
     [self.window close];
@@ -246,7 +244,7 @@
 }
 
 - (IBAction)formatImage:(id)sender {
-  [self selectImageFile:^(NSString *path) {
+  [self selectImageFile:^(NSString *path, ImageFileType* fileType) {
     if (path) {
       [self formatAndMountFileAtPath:path];
     }
