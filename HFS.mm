@@ -256,6 +256,19 @@ NS_ASSUME_NONNULL_BEGIN
 }
 
 - (BOOL)setAttributes:(NSDictionary *)attributes
+   ofFileSystemAtPath:(NSString *)path
+                error:(NSError **)error GM_AVAILABLE(4_0)
+{
+    NSLog(@"setAttributes:ofFileSystemAtPath: %@", path);
+
+    if (![self checkFlush:error]) {
+        return NO;
+    }
+
+    return [self.volume setAttributes:attributes ofFileSystemAtPath:path error:error];
+}
+
+- (BOOL)setAttributes:(NSDictionary *)attributes
          ofItemAtPath:(NSString *)path
              userData:(id)userData
                 error:(NSError **)error

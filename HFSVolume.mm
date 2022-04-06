@@ -176,17 +176,51 @@ typedef struct {
     attributes[kGMUserFileSystemVolumeNameKey] = [NSString stringWithCString:entry.name encoding:NSMacOSRomanStringEncoding];
     attributes[kGMUserFileSystemVolumeSupportsExtendedDatesKey] = @NO;
     attributes[kGMUserFileSystemVolumeSupportsCaseSensitiveNamesKey] = @YES;
-    attributes[kGMUserFileSystemVolumeMaxFilenameLengthKey] = @(27);
+    attributes[kGMUserFileSystemVolumeMaxFilenameLengthKey] = @(HFS_MAX_FLEN);
     attributes[kGMUserFileSystemVolumeFileSystemBlockSizeKey] = @(entry.alblocksz);
     attributes[kGMUserFileSystemVolumeSupportsAllocateKey] = @NO;
-    
-    if ( !(entry.flags & HFS_ISLOCKED)) {
-        attributes[kGMUserFileSystemVolumeSupportsSetVolumeNameKey] = @YES;
-    }
     
     //NSLog(@"%@", attributes);
     
     return attributes;
+}
+
+- (BOOL)setAttributes:(NSDictionary *)attributes
+   ofFileSystemAtPath:(NSString *)path
+                error:(NSError **)error GM_AVAILABLE(4_0)
+{
+    NSString* volumeName = attributes[kGMUserFileSystemVolumeNameKey];
+
+    if (volumeName) {
+        hfsvolent entry;
+        
+        if (hfs_vstat(self.hfsVolume, &entry) == -1) {
+            if (error)
+                *error = HFS_ERROR;
+            return NO;
+        }
+
+        if (volumeName) {
+            const char* pVolumeName = TO_MACOS_ROMAN_STRING(volumeName);
+            size_t count = strnlen(pVolumeName, HFS_MAX_VLEN+1);
+            
+            if (count >= HFS_MAX_VLEN+1) {
+                return NO;
+            }
+            
+            strncpy(entry.name, pVolumeName, count);
+        }
+        
+        if (hfs_vsetattr(self.hfsVolume, &entry) == -1) {
+            if (error) *error = HFS_ERROR;
+            return NO;
+        }
+    }
+    
+    return NO;
+
+    
+    return NO;
 }
 
 - (NSDictionary* _Nullable)attributesOfItemAtPath:(NSString *)path userData:(id)userData error:(NSError **)error
