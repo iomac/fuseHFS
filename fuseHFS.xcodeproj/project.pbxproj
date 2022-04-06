@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3C67AC2327EC282C003904B5 /* FileInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C67AC2227EC282C003904B5 /* FileInspector.m */; };
+		3C67AC2427EC282C003904B5 /* FileInspector.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C67AC2227EC282C003904B5 /* FileInspector.m */; };
 		3C8863F827AF986600FBE8A4 /* macFUSE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C8863F727AF986600FBE8A4 /* macFUSE.framework */; };
 		3C8863F927AF986600FBE8A4 /* macFUSE.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3C8863F727AF986600FBE8A4 /* macFUSE.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3C8863FD27AFA06F00FBE8A4 /* HFS.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3C8863FC27AFA06F00FBE8A4 /* HFS.mm */; };
@@ -108,6 +110,8 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* fuseHFS_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fuseHFS_Prefix.pch; sourceTree = "<group>"; };
+		3C67AC2127EC282C003904B5 /* FileInspector.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FileInspector.h; sourceTree = "<group>"; };
+		3C67AC2227EC282C003904B5 /* FileInspector.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FileInspector.m; sourceTree = "<group>"; };
 		3C8863F727AF986600FBE8A4 /* macFUSE.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = macFUSE.framework; path = /Library/Frameworks/macFUSE.framework; sourceTree = "<absolute>"; };
 		3C8863FB27AFA03700FBE8A4 /* HFS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HFS.h; sourceTree = "<group>"; };
 		3C8863FC27AFA06F00FBE8A4 /* HFS.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HFS.mm; sourceTree = "<group>"; };
@@ -210,6 +214,8 @@
 				3CD633D527B0F1A6001FAF1B /* NSException+Helpers.m */,
 				3CC6C19B27C4158B009E1BB8 /* NSError+HFS.h */,
 				3CC6C19C27C4158B009E1BB8 /* NSError+HFS.m */,
+				3C67AC2127EC282C003904B5 /* FileInspector.h */,
+				3C67AC2227EC282C003904B5 /* FileInspector.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -517,6 +523,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3CD0DE4927CF47FE00A2E6F1 /* main.m in Sources */,
+				3C67AC2427EC282C003904B5 /* FileInspector.m in Sources */,
 				3CD0DE5727CF48D200A2E6F1 /* NSError+POSIX.m in Sources */,
 				3CD0DE4227CF47FD00A2E6F1 /* AppDelegate.m in Sources */,
 				3CD0DE5827CF48DC00A2E6F1 /* HFS.mm in Sources */,
@@ -531,6 +538,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3CC6C19D27C4158B009E1BB8 /* NSError+HFS.m in Sources */,
+				3C67AC2327EC282C003904B5 /* FileInspector.m in Sources */,
 				3C8863FD27AFA06F00FBE8A4 /* HFS.mm in Sources */,
 				3CD633D627B0F1A6001FAF1B /* NSException+Helpers.m in Sources */,
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
